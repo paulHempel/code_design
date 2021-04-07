@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html>
+
+<header>
+    <title>Pauls Blog</title>
+</header>
+
+<body>
+
+    <input type="text" name="location" id="location" />
+
+    <button onclick="getWoeid()">Los!</button>
+
+    <div id="list">
+
+    </div>
+
+
+    <div id="weatherInfo">
+        <h1>Montag</h1>
+        <h2>Top Temperatur</h2>
+        <p id="low_temp">7C</p>
+
+        <h2>Niedrigste Temperatur</h2>
+        <p>-12C</p>
+
+
+    </div>
+
+
+</body>
+
+
+<script>
+    const locationInput = document.getElementById("location")
+    const divList = document.getElementById("list")
+    const divWeather = document.getElementById("weatherInfo")
+
+
+
+
+
+    const getWoeid = () => {
+        let formData = new FormData();
+        formData.append("locality", locationInput.value);
+
+        fetch('http://woeid.herokuapp.com/find',
+            {
+                method: 'POST',
+                body: formData
+            })
+
+            .catch(error => console.log('hupsi', error))
+
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                showList(data)
+            })
+    }
+
+
+
+
+    const showList = (list) => {
+        divList.innerHTML = ""
+        list.map(location => {
+            var button = document.createElement("button")
+            button.addEventListener('click', () => getWeather(location.woeid))
+            button.innerText = `${location.country}, ${location.area}`
+            divList.appendChild(button)
+        })
+    }
+
+
+    const showWeather = (weatherData) => {
+        let wetterZustand = ""
+        weatherData.consolidated_weather.map(
+            weather => {
+                var textField = document.createElement("p")
+                textField = weather.weather_state_name
+
+                console.log(weather.weather_state_name)
+                wetterZustand = `${wetterZustand}, ${weather.weather_state_name}`
+                // wetterZustand + weather.weather_state_name + ", "
+            }
+        )
+
+        divWeather.innerText = wetterZustand;
+    }
+
+
+    const getWeather = (woeId) =>
+        fetch('https://www.metaweather.com/api/location/' + woeId)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                showWeather(data)
+            })
+</script>
+
+</html>
